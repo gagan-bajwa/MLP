@@ -1,10 +1,14 @@
 import sys
 from dataclasses import dataclass
 
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder,StandardScaler
 
@@ -16,7 +20,7 @@ from src.utils import save_object
 
 @dataclass
 class Datatransformationconfig:
-    preprocesor_ob_file_path=os.path.join('artifact','preprocessor.pkl')
+    preprocesor_ob_file_path=os.path.join('artifacts','preprocessor.pkl')
 
 class Datatransformation:
     def __init__(self):
@@ -36,7 +40,7 @@ class Datatransformation:
             cat_pipeline=Pipeline(
                 steps=[('imputer',SimpleImputer(strategy='most_frequent')),
                        ('one_hotencoder',OneHotEncoder()),
-                       ('scaler',StandardScaler())
+                       ('scaler',StandardScaler(with_mean=False))
                        ]
             )
             logging.info('Numerical column standard scaling complete')
@@ -85,16 +89,21 @@ class Datatransformation:
 
             save_object(
 
-                file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessing_obj
+                file_path=self.data_transformation_config.preprocesor_ob_file_path,
+                obj= preprocessing_obj 
 
             )
+            save_path = self.data_transformation_config.preprocesor_ob_file_path
+            print(f"Saving preprocessing object to {save_path}")  # Debug print
+            save_object(file_path=save_path, obj=preprocessing_obj)
 
+            print("Preprocessing object saved successfully")
             return (
                 train_arr,
                 test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path,
+                self.data_transformation_config.preprocesor_ob_file_path,
             )
         except Exception as e:
+            print(f"Error during data transformation: {e}")
             raise CustomException(e,sys)
                         
